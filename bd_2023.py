@@ -1129,7 +1129,7 @@ df_final.to_excel("/content/banco_tratado.xlsx", index=False)
 from google.colab import files
 files.download("/content/banco_tratado.xlsx")
 
-"""40 - DOWNLOAD PARA INSPEÇÃO MANUAL
+""" 40 - DOWNLOAD PARA INSPEÇÃO MANUAL
 
 """
 
