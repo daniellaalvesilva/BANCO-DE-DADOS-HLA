@@ -941,91 +941,9 @@ if problemas:
 else:
     print("✅ Nenhuma observação com ':00' no final foi encontrada nas colunas HLA!")
 
-"""35 - Exclusão de letras após números (baixa/média resolução)"""
-
-import re
-
-# Função para corrigir os valores das colunas HLA
-def corrigir_hla(valor):
-    if pd.isna(valor):
-        return valor  # mantém valores ausentes como estão
-
-    valor_str = str(valor).strip()
-
-    # ✅ Se for apenas número → manter
-    if re.fullmatch(r"\d+", valor_str):
-        return valor_str
-
-    # ✅ Se for números separados por ":" → manter
-    if re.fullmatch(r"(?:\d+:)+\d+", valor_str):
-        return valor_str
-
-    # ✅ Se for números separados por ":" + uma letra no final → manter
-    if re.fullmatch(r"(?:\d+:)*\d+[A-Z]$", valor_str):
-        return valor_str
-
-    # ❌ Se for número seguido de ":" e depois letras (ex: "04:GEFX") → remover tudo após o primeiro ":"
-    if re.match(r"^\d+:[A-Z]+$", valor_str):
-        return valor_str.split(":")[0]
-
-    # ❌ Se for número seguido de ":" + letras/números inválidos → cortar no primeiro ":" e ficar só com o bloco inicial
-    if re.match(r"^\d+:[A-Za-z0-9]+$", valor_str):
-        return valor_str.split(":")[0]
-
-    return valor_str  # mantém qualquer outro formato inesperado para inspeção
-
-# Aplicar apenas nas colunas HLA
-corrigidas = 0
-exemplos = []
-
-for col in colunas_hla:
-    if col in df.columns:
-        for idx, val in df[col].items():
-            novo = corrigir_hla(val)
-            if str(val) != str(novo):
-                corrigidas += 1
-                if len(exemplos) < 15:  # guardar até 15 exemplos
-                    exemplos.append((idx, col, val, novo))
-                df.at[idx, col] = novo
-
-# Relatório
-print(f"✅ Total de observações corrigidas: {corrigidas}")
-print(f"📊 Total de linhas do banco: {len(df)}\n")
-
-print("🔎 Exemplos de correções realizadas:")
-for e in exemplos:
-    print(f"Linha {e[0]} | Coluna {e[1]} | Antes: {e[2]} → Depois: {e[3]}")
-
-"""36 - Inspecionar se há letras após números seguidos de :"""
-
-import re
-
-# Lista para guardar casos encontrados
-casos_invalidos = []
-
-# Regex que captura apenas número seguido de ":" e letras (ex: 04:GEFX)
-padrao = re.compile(r"^\d+:[A-Z]+$", re.IGNORECASE)
-
-for col in colunas_hla:
-    if col in df.columns:
-        for idx, val in df[col].items():
-            if pd.notna(val):  # ignora NaN
-                val_str = str(val).strip()
-                if padrao.match(val_str):
-                    casos_invalidos.append((idx, col, val_str))
-
-# Relatório
-if casos_invalidos:
-    print(f"⚠️ Foram encontrados {len(casos_invalidos)} valores inválidos no formato 'número:letras'\n")
-    print("🔎 Exemplos:")
-    for i, (idx, col, val) in enumerate(casos_invalidos[:15]):  # mostra até 15 exemplos
-        print(f"Linha {idx} | Coluna {col} | Valor: {val}")
-else:
-    print("✅ Nenhum valor inválido encontrado no formato 'número:letras'")
-
 """TRATAMENTO DAS DUPLICATAS
 
-37 - Inspecionar quantas duplicatas existem no banco
+35 - Inspecionar quantas duplicatas existem no banco
 """
 
 import pandas as pd
@@ -1055,7 +973,7 @@ exemplos = df[df['Código do paciente'].isin(pacientes_duplicados[:5])]
 exemplos_display = exemplos.sort_values(by='Código do paciente').head(20)  # até 20 linhas para visualizar
 exemplos_display
 
-"""38 - Conferência dados básicos das duplicatas"""
+"""36 - Conferência dados básicos das duplicatas"""
 
 # Definir os campos básicos que devem ser idênticos entre duplicatas
 campos_basicos = ['Data de nascimento', 'Data da coleta', 'Sexo', 'Cidade']
@@ -1085,7 +1003,7 @@ print("Quantidade de linhas antes:", linhas_antes)
 print("Quantidade de linhas depois:", linhas_depois)
 print("Linhas removidas:", linhas_antes - linhas_depois)
 
-"""39 - Mesclar"""
+"""37 - Mesclar"""
 
 # ------------------------------
 # MESCLAGEM FINAL DOS PACIENTES
@@ -1164,7 +1082,7 @@ print("\n=== Mesmos pacientes DEPOIS da mesclagem ===")
 exemplos_depois = df_final[df_final['Código do paciente'].isin(pacientes_repetidos)]
 display(exemplos_depois.sort_values(by='Código do paciente'))
 
-"""40-Conferir"""
+"""38-Conferir"""
 
 # ------------------------------
 # INSPEÇÃO DE DUPLICATAS NO RESULTADO FINAL
@@ -1187,7 +1105,7 @@ if len(pacientes_duplicados_final) > 0:
     print("\nExemplos de duplicatas ainda presentes no resultado final:")
     display(exemplos_final.sort_values(by='Código do paciente'))
 
-"""41 - Excluir duplicata divergente"""
+"""39 - Excluir duplicata divergente"""
 
 # 1. Encontrar duplicatas (todas as ocorrências)
 duplicatas = df_final[df_final.duplicated(subset=["Código do paciente"], keep=False)]
